@@ -215,6 +215,7 @@
 	var visibleImages = [];
 	var linkedImages = {};
 	var allShares = [];
+	var allCaptions = [];
 
 	// Add images to `allImages` and trigger filtration
 	// `send_images.js` is injected into all frames of the active tab, so this listener may be called multiple times
@@ -228,6 +229,7 @@
 		filterImages();
 		// alert(result.shares);
 		allShares = result.shares;
+		allCaptions = result.captions;
 	});
 
 	var timeoutID;
@@ -349,15 +351,15 @@
 					if (index === visibleImages.length) break;
 
 					if (show_image_url) {
-						tools_row.append('<td><input type="text" class="image_url_textbox" shares="' + allShares[index] + '" value="' + visibleImages[index] + '" readonly /></td>');
+						tools_row.append('<td><input type="text" class="image_url_textbox" shares="' + ls.folder_name + '/' + allShares[index] + ".jpg" + '" value="' + visibleImages[index] + '" readonly /></td>');
 					}
 
 					if (show_open_image_button) {
-						tools_row.append('<td class="open_image_button" data-shares="' + allShares[index] + '" data-url="' + visibleImages[index] + '" title="Open in new tab">&nbsp;</td>');
+						tools_row.append('<td class="open_image_button" data-shares="' + ls.folder_name + '/' + allShares[index] + ".jpg" + '" data-url="' + visibleImages[index] + '" title="Open in new tab">&nbsp;</td>');
 					}
 
 					if (show_download_image_button) {
-						tools_row.append('<td class="download_image_button" data-shares="' + allShares[index] + '" data-url="' + visibleImages[index] + '" title="Download">&nbsp;</td>');
+						tools_row.append('<td class="download_image_button" data-shares="' + ls.folder_name + '/' + allShares[index] + ".jpg" + '" data-url="' + visibleImages[index] + '" title="Download">&nbsp;</td>');
 					}
 				}
 				images_table.append(tools_row);
@@ -393,9 +395,8 @@
 			ls.image_count = checkedImages.length;
 			ls.image_number = 1;
 			checkedImages.forEach(function (checkedImage, index) {
-				// alert(allShares[index]);
-				chrome.downloads.download({ url: checkedImage, filename: allShares[index] });
-				// chrome.downloads.download({ url: checkedImage, filename: "/Users/amaanali/Desktop/MDM\ Content\ Scraper/" + allShares[index] + ".jpg" });
+
+				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + ".jpg" });
 			});
 
 			flashDownloadingNotification(ls.image_count);
