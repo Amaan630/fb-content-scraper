@@ -214,6 +214,7 @@
   var allImages = [];
   var visibleImages = [];
   var linkedImages = {};
+  var allShares = [];
 
   // Add images to `allImages` and trigger filtration
   // `send_images.js` is injected into all frames of the active tab, so this listener may be called multiple times
@@ -225,6 +226,8 @@
       }
     }
     filterImages();
+    // alert(result.shares);
+    allShares = result.shares;
   });
 
   var timeoutID;
@@ -273,7 +276,7 @@
               break;
             case 'wildcard':
               filterValue = filterValue.replace(/([.^$[\]\\(){}|-])/g, '\\$1').replace(/([?*+])/, '.$1');
-              /* fall through */
+            /* fall through */
             case 'regex':
               visibleImages = visibleImages.filter(function (url) {
                 try {
@@ -298,13 +301,13 @@
         visibleImages = visibleImages.filter(function (url) {
           var image = images_cache.children('img[src="' + encodeURI(url) + '"]')[0];
           return (ls.show_image_width_filter !== 'true' ||
-                   (ls.filter_min_width_enabled !== 'true' || ls.filter_min_width <= image.naturalWidth) &&
-                   (ls.filter_max_width_enabled !== 'true' || image.naturalWidth <= ls.filter_max_width)
-                 ) &&
-                 (ls.show_image_height_filter !== 'true' ||
-                   (ls.filter_min_height_enabled !== 'true' || ls.filter_min_height <= image.naturalHeight) &&
-                   (ls.filter_max_height_enabled !== 'true' || image.naturalHeight <= ls.filter_max_height)
-                 );
+            (ls.filter_min_width_enabled !== 'true' || ls.filter_min_width <= image.naturalWidth) &&
+            (ls.filter_max_width_enabled !== 'true' || image.naturalWidth <= ls.filter_max_width)
+          ) &&
+            (ls.show_image_height_filter !== 'true' ||
+              (ls.filter_min_height_enabled !== 'true' || ls.filter_min_height <= image.naturalHeight) &&
+              (ls.filter_max_height_enabled !== 'true' || image.naturalHeight <= ls.filter_max_height)
+            );
         });
       }
 
@@ -389,8 +392,10 @@
       }
       ls.image_count = checkedImages.length;
       ls.image_number = 1;
-      checkedImages.forEach(function(checkedImage) {
-        chrome.downloads.download({ url: checkedImage });
+      checkedImages.forEach(function (checkedImage, index) {
+        // alert(allShares[index]);
+        chrome.downloads.download({ url: checkedImage, filename: allShares[index] });
+        // chrome.downloads.download({ url: checkedImage, filename: "/Users/amaanali/Desktop/MDM\ Content\ Scraper/" + allShares[index] + ".jpg" });
       });
 
       flashDownloadingNotification(ls.image_count);
@@ -411,7 +416,7 @@
           <label><input type="checkbox" id="dont_show_again_checkbox" />Don\'t show this again</label>\
         </div>'
       )
-      .appendTo('#filters_container');
+        .appendTo('#filters_container');
 
     $('#yes_button, #no_button').on('click', function () {
       ls.show_download_confirmation = !$('#dont_show_again_checkbox').prop('checked');
@@ -452,3 +457,32 @@
     initializeStyles();
   });
 }(localStorage));
+
+function extractImageFromElement(element) {
+  if (element.tagName.toLowerCase() === 'img') {
+    let src = element.src;
+    const hashIndex = src.indexOf('#');
+    if (hashIndex >= 0) {
+      src = src.substr(0, hashIndex);
+    }
+    return src;
+  }
+
+  if (element.tagName.toLowerCase() === 'a') {
+    const href = element.href;
+    if (imageDownloader.isImageURL(href)) {
+      imageDownloader.linkedImages[href] = '0';
+      return href;
+    }
+  }
+
+  const backgroundImage = window.getComputedStyle(element).backgroundImage;
+  if (backgroundImage) {
+    const parsedURL = imageDownloader.extractURLFromStyle(backgroundImage);
+    if (imageDownloader.isImageURL(parsedURL)) {
+      return parsedURL;
+    }
+  }
+
+  return '';
+};
