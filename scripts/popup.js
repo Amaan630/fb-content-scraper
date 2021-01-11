@@ -25,7 +25,7 @@
 				ls.filter_url = $.trim(this.value);
 			});
 
-		chrome.downloads.onDeterminingFilename.addListener(suggestNewFilename);
+		// chrome.downloads.onDeterminingFilename.addListener(suggestNewFilename);
 
 		$('#download_button').on('click', downloadImages);
 
