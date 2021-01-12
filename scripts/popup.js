@@ -227,9 +227,9 @@
 			}
 		}
 		filterImages();
-		// alert(result.shares);
 		allShares = result.shares;
 		allCaptions = result.captions;
+		// alert(allCaptions);
 	});
 
 	var timeoutID;
@@ -396,7 +396,15 @@
 			ls.image_number = 1;
 			checkedImages.forEach(function (checkedImage, index) {
 
-				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + ".jpg" });
+				var caption = allCaptions[index];
+				if (caption == undefined) {
+					caption = "No caption"
+				}
+				caption = caption.replace(caption.slice(caption.indexOf("<"), caption.lastIndexOf(">")), "").replace(/</g, "").replace(/>/g, "");
+				// alert(caption)
+
+				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + "_" + caption + ".jpg" });
+				// chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + ".jpg" });
 			});
 
 			flashDownloadingNotification(ls.image_count);
@@ -443,7 +451,7 @@
 					element.fadeIn(interval, function () { fade(false); });
 				}
 				else {
-					element.fadeOut(interval, function () { fade(true); });
+					// element.fadeOut(interval, function () { fade(true); });
 				}
 			}
 			else if (callback) {

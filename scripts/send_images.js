@@ -40,21 +40,17 @@
 		},
 
 		extractCaptionsFromTags() {
-			var listOfShares = imageDownloader.extractSharesFromTags()
-
-			// we now map up each to their parent div:
-			listOfShares = listOfShares.map((val) => { return val.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement });
-
 			// note: this gives the element PARENT of the caption 
 			var listOfCaptions = [].slice.apply(document.querySelectorAll('div.kvgmc6g5.cxmmr5t8.oygrvhab.hcukyx3x.c1et5uql.ii04i59q'));
 
+			var listOfShares = [].slice.apply(document.querySelectorAll('span.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.oi732d6d.ik7dh3pa.fgxwclzu.a8c37x1j.keod5gw0.nxhoafnm.aigsh9s9.d9wwppkn.fe6kdd0r.mau55g9w.c8b282yb.iv3no6db.jq4qci2q.a3bd9o3v.knj5qynh.m9osqain')).filter((val) => val.innerHTML.indexOf("Share") != -1).filter((val) => val.innerHTML != "Share a photo or write something.").map((val) => { return val.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement });
 			// now filter the list of images to only include those who have a parent equal to a share parent
-			var mappedLOC = listOfCaptions.map((val) => { return val.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement });
+			// alert(listOfShares.includes(listOfCaptions[7].parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement));
+			// alert(listOfCaptions.map((val) => { return val.firstChild.innerHTML }))
+			listOfCaptions = listOfCaptions.filter((caption) => listOfShares.includes(caption.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement));
+			// alert(listOfCaptions.map((val) => { return val.firstChild.innerHTML }))
+			// alert(listOfCaptions.map((val) => { return val.firstChild.innerHTML }))
 
-			alert(mappedLOC)
-			listOfCaptions = mappedLOC.filter((caption) => listOfShares.includes(caption));
-
-			// 11 parents till the main for the caption
 			return listOfCaptions
 		},
 
@@ -115,12 +111,12 @@
 		).map(relativeUrlToAbsolute)
 	);
 	imageDownloader.shares = imageDownloader.extractSharesFromTags().map((val) => { return val.innerHTML });
-	// imageDownloader.captions = imageDownloader.extractCaptionsFromTags().map((val) => { return val.firstChild.innerHTML });
-
+	imageDownloader.captions = imageDownloader.extractCaptionsFromTags().map((val) => { return val.firstChild.innerHTML });
+	// alert(imageDownloader.captions)
 	chrome.runtime.sendMessage({
 		linkedImages: imageDownloader.linkedImages,
 		images: imageDownloader.images,
-		// captions: imageDownloader.captions,
+		captions: imageDownloader.captions,
 		shares: imageDownloader.shares,
 	});
 
