@@ -216,6 +216,7 @@
 	var linkedImages = {};
 	var allShares = [];
 	var allCaptions = [];
+	var everything = [];
 
 	// Add images to `allImages` and trigger filtration
 	// `send_images.js` is injected into all frames of the active tab, so this listener may be called multiple times
@@ -229,6 +230,8 @@
 		filterImages();
 		allShares = result.shares;
 		allCaptions = result.captions;
+
+		everything = result.everything;
 		// alert(allCaptions);
 	});
 
@@ -395,16 +398,23 @@
 			ls.image_count = checkedImages.length;
 			ls.image_number = 1;
 			checkedImages.forEach(function (checkedImage, index) {
+				var item = everything.filter((thing) =>
+					thing.src == checkedImage
+				);
 
-				var caption = allCaptions[index];
-				if (caption == undefined) {
-					caption = "No caption"
-				}
-				caption = caption.replace(caption.slice(caption.indexOf("<"), caption.lastIndexOf(">")), "").replace(/</g, "").replace(/>/g, "");
-				// alert(caption)
+				item = item[0];
 
-				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + "_" + caption + ".jpg" });
-				// chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + ".jpg" });
+				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + item.share + "_" + item.caption + ".jpg" });
+
+				// var caption = allCaptions[index];
+				// if (caption == undefined) {
+				// 	caption = "No caption"
+				// }
+				// caption = caption.replace(caption.slice(caption.indexOf("<"), caption.lastIndexOf(">")), "").replace(/</g, "").replace(/>/g, "");
+				// // alert(caption)
+
+				// chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + "_" + caption + ".jpg" });
+				// // chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + allShares[index] + ".jpg" });
 			});
 
 			flashDownloadingNotification(ls.image_count);
@@ -495,3 +505,33 @@ function extractImageFromElement(element) {
 
 	return '';
 };
+
+var tagBody = '(?:[^"\'>]|"[^"]*"|\'[^\']*\')*';
+
+var tagOrComment = new RegExp(
+	'<(?:'
+	// Comment body.
+	+ '!--(?:(?:-*[^->])*--+|-?)'
+	// Special "raw text" elements whose content should be elided.
+	+ '|script\\b' + tagBody + '>[\\s\\S]*?</script\\s*'
+	+ '|style\\b' + tagBody + '>[\\s\\S]*?</style\\s*'
+	// Regular name
+	+ '|/?[a-z]'
+	+ tagBody
+	+ ')>',
+	'gi');
+function removeTags(html) {
+	var oldHtml;
+	do {
+		oldHtml = html;
+		html = html.replace(tagOrComment, '');
+	} while (html !== oldHtml);
+	return html.replace(/</g, '&lt;');
+}
+
+// function getCaptionFromImage(listOfCaptions, listO, image) {
+// 	// First get the parent node of the image:
+// 	let parent = image.closest(".rq0escxv.l9j0dhe7.du4w35lb.hybvsw6c.ue3kfks5.pw54ja7n.uo3d90p7.l82x9zwi.ni8dbmo4.stjgntxs.k4urcfbm.sbcfpzgs");
+
+// 	// Then filter out the list of captions to 
+// }
