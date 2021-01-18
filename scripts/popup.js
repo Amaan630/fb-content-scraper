@@ -404,12 +404,23 @@
 
 				item = item[0];
 
-				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + item.share + "_" + item.caption + ".jpg" });
+				if (item.caption == undefined) {
+					item.caption = "No caption"
+				}
+
+				while (item.caption.includes("<")) {
+					item.caption = item.caption.replace(/<.*>/, '')
+				}
+				while (item.caption.includes(">")) {
+					item.caption = item.caption.replace(/\=.*>/, '')
+				}
+
+				alert(item.caption)
+
+				// alert(ls.folder_name + '/' + item.share + "_" + item.caption + ".jpg")
+				chrome.downloads.download({ url: checkedImage, filename: ls.folder_name + '/' + formatNum(item.share) + "_" + item.caption + ".jpg" });
 
 				// var caption = allCaptions[index];
-				// if (caption == undefined) {
-				// 	caption = "No caption"
-				// }
 				// caption = caption.replace(caption.slice(caption.indexOf("<"), caption.lastIndexOf(">")), "").replace(/</g, "").replace(/>/g, "");
 				// // alert(caption)
 
@@ -535,3 +546,42 @@ function removeTags(html) {
 
 // 	// Then filter out the list of captions to 
 // }
+
+function formatNum(num) {
+	// we have "2.1K"
+
+	if (num.includes("K") || num.includes("M")) {
+		var places = 0;
+
+		if (num.includes("K")) {
+			places = 3;
+			num = num.replace("K", "");
+		}
+		if (num.includes("M")) {
+			places = 6;
+			num = num.replace("M", "");
+		}
+		// we have "2.1"
+
+		num = num.split(".");
+		// we have [2, 1]
+		var alreadyPlaces = 0;
+		if (num.length > 1) {
+			alreadyPlaces = num[1].length - 7;
+		}
+		places = places - alreadyPlaces;
+		// places is 2 now
+
+		num = num.join("").split(" ");
+		// we have "21"
+
+		for (let i = 0; i < places; i++) {
+			num[0] = num[0] + "0"
+			// alert(num[0])
+		}
+
+		num = num.join(" ")
+		// we have "2100"
+	}
+	return num
+}
